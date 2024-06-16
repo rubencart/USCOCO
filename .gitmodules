@@ -1,0 +1,6 @@
+[submodule "src/DisCo"]
+	path = src/DisCo
+	url = git@github.com:facebookresearch/DisCo.git
+[submodule "latent-structure-tools"]
+	path = latent-structure-tools
+	url = git@github.com:rubencart/latent-structure-tools.git

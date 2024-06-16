@@ -1,0 +1,31 @@
+name: uscoco_env
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - cudatoolkit=11.1
+  - python=3.8
+  - cython
+  - pytorch>=1.12
+  - torchvision
+  - tqdm
+  - easydict
+  - nltk
+  - scikit-image
+  - scikit-learn
+  - python-dateutil
+  - jsonschema
+  - transformers
+  - seaborn
+  - pip
+  - ipython
+  - pip:
+      - jsonargparse
+      - typed-argument-parser
+      - pycocotools
+      - plotly
+      - pytorch-lightning=1.6
+      - wandb
+      - ftfy
+      - regex
