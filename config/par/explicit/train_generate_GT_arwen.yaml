@@ -4,17 +4,6 @@ captions: 'coco'
 cfg_name: 'detr-GT-v3-pos_1-struct_attn'
 wandb_project_name: 'USCOCO'
 
-
-
-
-
-rprecision:
- checkpoint: '/cw/working-rose/rubenc/MMMAli/output/2022_04_20_12_38_02_r-precision-cpn-nc_41/checkpoints/last.ckpt'
-
-
-
-
-
 cuda: True
 pin_memory: True
 num_workers: 12

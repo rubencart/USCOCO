@@ -15,8 +15,6 @@ do_test: True
 do_validate_during_training: True
 batch_size: 32
 val_batch_size: 32
-compute_fid_rprecision_val: False
-compute_fid_rprecision_test: False
 nb_of_pos_bins: 15
 lr_schedule: 'linear_with_warmup'
 lr_schedule_warmup_epochs: 5

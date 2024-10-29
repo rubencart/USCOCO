@@ -35,11 +35,10 @@ class COCODataModule(pl.LightningDataModule):
     image_transform: Union[A.Compose, None] = None
     smartfilter: Union[SpuriousFilter, None] = None
 
-    def __init__(self, cfg: Config, tokenizer: Tokenizer, rprecision: bool = False):
+    def __init__(self, cfg: Config, tokenizer: Tokenizer):
         super().__init__()
         self.cfg = cfg
         self.tokenizer = tokenizer
-        self.rprecision = rprecision
 
     def setup(self, stage=None):
         assert stage == "fit" or stage == "test" or stage == "validate" or stage is None, stage
@@ -198,7 +197,6 @@ class COCODataModule(pl.LightningDataModule):
             smartfilter=self.smartfilter,
             image_transform=None,
             use_ids_from_file=self.cfg.new_valset_ids,
-            rprecision=self.rprecision,
         )
 
     def get_comp_test_ds(self, comp_test_ds_class):
@@ -207,7 +205,6 @@ class COCODataModule(pl.LightningDataModule):
             self.tokenizer,
             smartfilter=self.smartfilter,
             image_transform=None,
-            rprecision=self.rprecision,
         )
 
     def get_val_ds(self, ds_class, val_capt_file):
@@ -221,7 +218,6 @@ class COCODataModule(pl.LightningDataModule):
             split="val",
             smartfilter=self.smartfilter,
             image_transform=None,
-            rprecision=self.rprecision,
         )
 
     def get_train_ds(self, ds_class, train_capt_file):
@@ -234,7 +230,6 @@ class COCODataModule(pl.LightningDataModule):
             split="train",
             smartfilter=self.smartfilter,
             image_transform=self.image_transform,
-            rprecision=self.rprecision,
         )
 
     def get_absurd_ds(self, ds_class, capt_file):
@@ -250,7 +245,6 @@ class COCODataModule(pl.LightningDataModule):
             split="absurd",
             smartfilter=None,
             image_transform=None,
-            rprecision=self.rprecision,
             use_ids_from_file=list(set([ann["image_id"] for ann in absurd_dict["annotations"]])),
         )
 

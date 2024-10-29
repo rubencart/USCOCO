@@ -96,18 +96,10 @@ class GenerationModule(pl.LightningModule, ABC):
 
         params = list(self.named_parameters())
 
-        def is_rprecision_model(n):
-            return "rp_model" in n
-
         def is_text_enc(n):
-            return "text_encoder" in n and not is_rprecision_model(n)
+            return "text_encoder" in n
 
-        params_and_configs = [
-            (
-                [p for n, p in params if not is_text_enc(n) and not is_rprecision_model(n)],
-                self.cfg.detr,
-            )
-        ]
+        params_and_configs = [([p for n, p in params if not is_text_enc(n)], self.cfg.detr)]
         if self.cfg.model.train_text_encoder:
             params_and_configs += [
                 ([p for n, p in params if is_text_enc(n)], self.cfg.text_encoder)

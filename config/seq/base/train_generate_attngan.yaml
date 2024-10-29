@@ -29,8 +29,7 @@ train:
  precision: 32       # todo
  max_steps: -1
  gradient_clip_val: 3.0
-rprecision:
- checkpoint: '/data/leuven/335/vsc33568/MMMAli-dev/output/2022_02_09_10_57_14_r-precision-train-sf-v1-fixed_41/checkpoints/last.ckpt'
+
 text_encoder:
  weight_decay: 0.0
  lr: 0.00

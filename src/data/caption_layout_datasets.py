@@ -113,7 +113,6 @@ class CocoInstancesDataset(Dataset, ABC):
         image_transform=None,
         _preprocess_instance_ds=True,
         use_ids_from_file=None,
-        rprecision=False,
     ):
         """
         https://cocodataset.org/#format-data
@@ -154,8 +153,6 @@ class CocoInstancesDataset(Dataset, ABC):
         self.pos_dict = PositionDictionary(cfg)
         self.pos_cont_pad_id = cfg.pos_cont_pad_id
 
-        self.rprecision = rprecision
-
         with open(self.cfg.new_valset_ids) as json_file:
             self.new_valset_ids = json.load(json_file)
 
@@ -181,7 +178,8 @@ class CocoInstancesDataset(Dataset, ABC):
                 self.dimension_mean_stds = compute_mean_std_dimensions(cfg, smartfilter)
                 with open(cfg.obj_gan.mean_std_path, "w") as f:
                     json.dump(self.dimension_mean_stds, f)
-            self.norm_mean_std = not self.rprecision
+
+            self.norm_mean_std = True
 
     def _preprocess_instance_ds(self):
         logger.info("preprocessing instances in CocoInstancesDataset...")
@@ -356,7 +354,7 @@ class CocoInstancesDataset(Dataset, ABC):
         add_full_img_box=False,
         already_normalized=False,
     ):
-        full_img_box = add_full_img_box or self.rprecision
+        full_img_box = add_full_img_box
 
         labels = [self.category_dict.bos()]
         bboxes_quant = (
@@ -527,7 +525,6 @@ class CocoInstancesAndAnyCaptionsDataset(CocoInstancesDataset, ABC):
         image_transform=None,
         _preprocess_instance_ds=True,
         use_ids_from_file=None,
-        rprecision=False,
     ):
         super().__init__(
             cfg,
@@ -540,7 +537,6 @@ class CocoInstancesAndAnyCaptionsDataset(CocoInstancesDataset, ABC):
             image_transform,
             _preprocess_instance_ds,
             use_ids_from_file,
-            rprecision=rprecision,
         )
         self.load_span_tree_pos_embs = cfg.detr.load_span_tree_pos_embs
         self.syntax_tree_ds = None
@@ -612,7 +608,6 @@ class CocoInstancesAndCaptionsDataset(CocoInstancesAndAnyCaptionsDataset):
         image_transform=None,
         _preprocess_instance_ds=True,
         use_ids_from_file=None,
-        rprecision=False,
     ):
         super().__init__(
             cfg,
@@ -625,7 +620,6 @@ class CocoInstancesAndCaptionsDataset(CocoInstancesAndAnyCaptionsDataset):
             image_transform,
             _preprocess_instance_ds,
             use_ids_from_file,
-            rprecision=rprecision,
         )
         self.captions_ds: CocoCaptions = {
             "train": S.TrainCaptions,
@@ -761,7 +755,6 @@ class CocoInstancesAndNotatedSyntaxTreeDataset(CocoInstancesAndAnyCaptionsDatase
         image_transform=None,
         _preprocess_instance_ds=True,
         use_ids_from_file=None,
-        rprecision=False,
     ):
         super().__init__(
             cfg,
@@ -774,7 +767,6 @@ class CocoInstancesAndNotatedSyntaxTreeDataset(CocoInstancesAndAnyCaptionsDatase
             image_transform,
             _preprocess_instance_ds=False,
             use_ids_from_file=use_ids_from_file,
-            rprecision=rprecision,
         )
         logger.info(
             "Building syntax tree dataset from silver-truth PLM/TG annotation file: %s"

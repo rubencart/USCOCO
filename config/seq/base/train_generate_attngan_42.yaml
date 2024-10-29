@@ -28,8 +28,7 @@ train:
  precision: 32       # todo
  max_steps: -1
  gradient_clip_val: 3.0
-rprecision:
- checkpoint: '/cw/working-rose/rubenc/MMMAli/output/2022_04_20_12_38_02_r-precision-cpn-nc_41/checkpoints/last.ckpt'
+
 text_encoder:
  weight_decay: 0.0
  lr: 0.00

@@ -495,9 +495,6 @@ class Config(Tap):
     start_early_stopping_after_epochs: int = 30
     num_imgs_to_generate_for_valid: int = 1000
     recompute_val_image_generation_subset: bool = False
-    fid_batch_size: int = 30
-    fid_dimensions: int = 2048
-    fid_workers: int = 0
 
     early_stop: str = "f1_iou_05"
     early_stop_min_or_max: str = "max"
@@ -506,8 +503,6 @@ class Config(Tap):
     model_checkpoint_monitor: str = "f1_iou_05"
 
     sample_loss_weights: bool = False
-    compute_fid_rprecision_test: bool = False
-    compute_fid_rprecision_val: bool = False
 
     image_size: int = 256
     find_unused_params: bool = False

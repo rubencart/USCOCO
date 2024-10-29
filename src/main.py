@@ -137,8 +137,6 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
         ("delta_pairwise_norm_width_height_diffs", "min"),
         ("delta_pairwise_x_distances_norm_w", "min"),
         ("delta_pairwise_y_distances_norm_h", "min"),
-        ("fid", "min"),
-        ("r_precision", "max"),
         ("f1_iou_05", "max"),
         ("f1_iou_00", "max"),
     ):
@@ -228,7 +226,7 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
 
 
 def make_model(
-    dm: COCODataModule, cfg: Config, tokenizer: Tokenizer, init_rprecision_model: bool = True
+    dm: COCODataModule, cfg: Config, tokenizer: Tokenizer
 ) -> Tuple[pl.LightningModule, Type[pl.LightningModule]]:
     if cfg.model.obj_gan:
         module_class = ObjGANGenerationModule
@@ -246,7 +244,6 @@ def make_model(
                 category_dict=dm.category_dict,
                 pos_dict=dm.pos_dict,
                 tokenizer=tokenizer,
-                init_rprecision_model=init_rprecision_model,
                 strict=not cfg.text_encoder.use_llama,
             )
         except RuntimeError as e:
@@ -258,7 +255,6 @@ def make_model(
                 category_dict=dm.category_dict,
                 pos_dict=dm.pos_dict,
                 tokenizer=tokenizer,
-                init_rprecision_model=init_rprecision_model,
                 strict=False,
             )
 
@@ -269,7 +265,6 @@ def make_model(
             category_dict=dm.category_dict,
             pos_dict=dm.pos_dict,
             tokenizer=tokenizer,
-            # automatic_optimization=False
         )
 
     return model, module_class
