@@ -28,7 +28,7 @@ train:
  gpus: -1
  max_epochs: 200
  min_epochs: 200
- precision: 32       # todo
+ precision: 32
 
  gradient_clip_val: 3.0
 text_encoder:

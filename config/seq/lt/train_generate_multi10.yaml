@@ -27,7 +27,7 @@ latent_tree_val_h5: '/cw/liir_code/NoCsBack/rubenc/vpcfg-dev/output/pred_trees_2
 latent_tree_train_h5: '/cw/liir_code/NoCsBack/rubenc/vpcfg-dev/output/pred_trees_2022_01_31_12_16_38_multi-spans10-newsplits-s40_v2/train2017_pred_trees_wt.h5'
 train:
  gpus: -1
- precision: 32       # todo
+ precision: 32
  max_steps: -1
  gradient_clip_val: 3.0
 text_encoder:

@@ -2,6 +2,7 @@
 
 Code, data and checkpoints for our [paper](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00643/120575) 
 published in TACL.
+Version on arXiv contains minor corrections (typo's etc): [link](https://arxiv.org/abs/2401.14212).
 
 ## Install
 
@@ -9,7 +10,7 @@ Dependencies:
 - python 3.8
 - pytorch 1.12
 - transformers
-- pytorch-lightning 1.6
+- pytorch-lightning 1.9
 - wandb
 - typed-argument-parser
 - h5py
@@ -17,26 +18,155 @@ Dependencies:
 - iglovikov_helper_functions
 - pycocotools
 - albumentations
-- latent-structure-tools
 - clip
 - nltk
 - pyyaml
 
 ```
-conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
-conda install h5py
-pip install pytorch-lightning==1.6.1 wandb transformers typed-argument-parser seaborn iglovikov_helper_functions pycocotools albumentations nltk pyyaml
+conda create -n uscocoenv python=3.8 h5py -c conda-forge
+conda activate uscocoenv
+conda install pytorch=1.12 torchvision torchaudio cudatoolkit=11.3 -c pytorch
+# conda install h5py
+pip install pytorch-lightning==1.9 wandb transformers typed-argument-parser seaborn iglovikov_helper_functions pycocotools albumentations nltk pyyaml
 pip install git+https://github.com/openai/CLIP.git
 ```
 
 ## Run
 
+### Training
+
+Edit or copy a `.yaml` file in `config/` and change the settings, or change the default settings in `config.py`
+(at least change the paths marked with `# todo` in `config.py` or set them in a `.yaml`).
+
 Set `train_image_dir`, `val_image_dir`, `train_captions`, `val_captions`, `train_instances`, `val_instances` 
 to where you downloaded the COCO dataset (images + captions and instances json's, all in the 2017 version).
+Unzip all the `.zip` files in `data/`.
 
 ```
-TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/train_generate.yaml
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/train_generate.yaml --seed 42
 ```
+
+### Use trained models for inference
+
+## Replicate experiments
+
+### Preprocessing
+
+```
+# GPT-2_bllip with all preprocessing
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip.yaml --seed 42
+# GPT-2_bllip with no preprocessing
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_no_CPN_no_SP.yaml --seed 42
+# GPT-2_bllip with only SP (no CPN)
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_no_CPN.yaml --seed 42
+# GPT-2_bllip with only CPN (no SP)
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_no_SP.yaml --seed 42
+
+# PLM with all preprocessing
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm.yaml --seed 42
+# PLM with no preprocessing
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_no_CPN_no_SP.yaml --seed 42
+# PLM with only SP (no CPN)
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_no_CPN.yaml --seed 42
+# PLM with only CPN (no SP)
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_no_SP.yaml --seed 42
+```
+
+
+### Table 2 (layout predictor comparison)
+
+In order of appearance:
+
+```
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/obj_lstm_attn_gan.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/obj_lstm_gpt2_bllip.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/obj_lstm_lrg_gpt2_bllip.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/seq_gpt2_bllip.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/par_gpt2_bllip.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/seq_tg.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/table_2/par_tg.yaml --seed 42
+```
+
+### Table 3 (text encoder comparison with and without structural loss)
+
+In order of appearance:
+
+```
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_Lstruct.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_lrg.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_lrg_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_lrg.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_lrg_Lstruct.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/llama_7B.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/llama_7B_Lstruct.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_mask.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_mask_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_Lstruct.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_lrg.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_lrg_Lstruct.yaml --seed 42
+```
+
+### Table 4 (Final model results)
+
+In order of appearance:
+
+```
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_shuffle.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_lrg.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/gpt2_bllip_lrg.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/llama_7B.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/llama_30B.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/clip.yaml --seed 42  # not in table
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_rightbranch.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_rightbranch_Lstruct.yaml --seed 42
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/plm_mask_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_Lstruct.yaml --seed 42
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_lrg_Lstruct.yaml --seed 42
+```
+
+### Probe
+
+Run first with (in `.yaml`):
+```
+save_probe_embeddings: True
+save_probe_embeddings_train: True
+```
+
+E.g.:
+```
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/generate_probe_emb.yaml --seed 43
+```
+
+And then start a probe run:
+```
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/probe/main.py --cfg config/probe/gpt2_bin_allneg.yaml --seed 43
+```
+
+### Train TG models
+
+As mentioned in the article, we train TG models based on the paper by Sartran et al., but with minor changes,
+and with our own implementation.
+We based this implementation on Qian et al.'s implementation of their PLM/PLM_mask models, and provide our code in a fork 
+of their repo: [https://github.com/rubencart/transformers-struct-guidance](https://github.com/rubencart/transformers-struct-guidance).
 
 ## USCOCO data
 

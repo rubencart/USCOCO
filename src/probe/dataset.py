@@ -652,7 +652,7 @@ def build_dataloaders(
         DsType = RBCocoProbeDataset
     elif cfg.use_plm and "qian" in cfg.probe.h5_path:
         DsType = PLMCocoProbeDataset
-    elif (cfg.text_encoder.text_encoder == "qian_base_lm" and "qian-base" in cfg.probe.h5_path) or (
+    elif (cfg.text_encoder.text_encoder == "gpt2_bllip" and "qian-base" in cfg.probe.h5_path) or (
         cfg.text_encoder.text_encoder == "huggingface"
         and "gpt2" in cfg.text_encoder.hf_model_name_or_path
         and "gpt2" in cfg.probe.h5_path

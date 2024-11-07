@@ -48,7 +48,7 @@ class Tokenizer(ABC):
             "visualbert",
             "rp_huggingface",
             "rp_transformer",
-            "qian_base_lm",
+            "gpt2_bllip",
         ):
             return HuggingFaceTokenizer(cfg, **kwargs)
         elif cfg.text_encoder == "attn_gan":
@@ -58,7 +58,7 @@ class Tokenizer(ABC):
         elif cfg.text_encoder == "plm":
             return TGTokenizer(cfg, use_tg=False)
         else:
-            assert cfg.text_encoder in ("clip", "sent_clip")
+            assert cfg.text_encoder == "sent_clip"
             return ClipTokenizer(cfg)
 
 
@@ -219,7 +219,7 @@ class HuggingFaceTokenizer(Tokenizer):
 
         if (
             self.tokenizer.pad_token is None
-            and cfg.text_encoder in ("huggingface", "qian_base_lm")
+            and cfg.text_encoder in ("huggingface", "gpt2_bllip")
             and ("gpt2" in cfg.hf_model_name_or_path or cfg.use_llama)
         ):
             logger.info("Huggingface tokenizer: setting pad token")
@@ -258,12 +258,12 @@ class TGTokenizer(Tokenizer):
         self, cfg: TextEncoderConfig, tokenizer: PreTrainedTokenizer = None, use_tg: bool = True
     ):
         super().__init__(cfg)
-        logger.info("Initializing TG tokenizer: %s" % self.cfg.qian_architecture)
+        logger.info("Initializing TG tokenizer: %s" % self.cfg.architecture)
         self.use_tg = use_tg  # False for PLM
 
         if tokenizer is None:
             self.tokenizer = GPT2Tokenizer.from_pretrained(
-                self.cfg.qian_architecture,
+                self.cfg.architecture,
                 cache_dir=self.cfg.cache_dir,
                 local_files_only=cfg.huggingface_offline,
                 # add_prefix_space=True,

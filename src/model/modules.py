@@ -207,24 +207,11 @@ class _SuperModel(nn.Module):
                 "huggingface",
                 "vokenization",
                 "attn_gan",
-                "qian_base_lm",
+                "gpt2_bllip",
             )
         ):
             length_states = states_for_length[:, 0, :]
             sent_embs, rest_embs = sequence_states[:, 0, :], sequence_states[:, 1:, :]
-        elif self.cfg.text_encoder.text_encoder == "clip":
-            bs, L = input_ids.shape
-            # eos token is used in CLIP model, id is greatest of vocab
-            eos_indices = input_ids.argmax(dim=-1)
-            restmask = (
-                torch.ones(bs, L)
-                .type_as(eos_indices)
-                .scatter_(1, eos_indices.unsqueeze(1), 0.0)
-                .bool()
-            )
-            length_states = states_for_length[torch.arange(bs), eos_indices]
-            sent_embs = sequence_states[torch.arange(bs), eos_indices]
-            rest_embs = sequence_states[restmask].view(bs, L - 1, -1)
         elif self.cfg.text_encoder.text_encoder == "sent_clip":
             length_states = states_for_length[:, 0]
             sent_embs = sequence_states

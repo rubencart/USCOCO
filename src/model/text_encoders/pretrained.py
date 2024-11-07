@@ -51,18 +51,11 @@ class PretrainedTextEncoder(nn.Module, ABC):
                 )
 
                 text_encoder = HuggingFaceTextEncoder(cfg.text_encoder, tokenizer)
-            elif cfg.text_encoder.text_encoder == "qian_base_lm":
+            elif cfg.text_encoder.text_encoder == "gpt2_bllip":
                 logger.info("Initializing Qian baseline LM text encoder")
                 from model.text_encoders.text_encoders import LMEncoder
 
                 text_encoder = LMEncoder(cfg.text_encoder)
-            elif cfg.text_encoder.text_encoder == "clip":
-                logger.info("Initializing CLIP text encoder")
-                from model.text_encoders.text_encoders import (
-                    TokenCLIPTextEncoder,
-                )
-
-                text_encoder = TokenCLIPTextEncoder(cfg.text_encoder, tokenizer)
             elif cfg.text_encoder.text_encoder == "sent_clip":
                 logger.info("Initializing CLIP text encoder")
                 from model.text_encoders.text_encoders import (

@@ -89,11 +89,6 @@ class GenerationModule(pl.LightningModule, ABC):
             checkpoint["state_dict"] = state_dict
 
     def configure_optimizers(self):
-        # https://forums.pytorchlightning.ai/t/effective-learning-rate-and-batch-size-with-lightning-in-ddp/101/7
-        # https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel
-        # --> if loss is averaged, not necessary!
-        # EDIT: yes, still better, because more samples => better estimate of true loss
-
         params = list(self.named_parameters())
 
         def is_text_enc(n):

@@ -24,7 +24,7 @@ wandb_offline: False
 deterministic: False
 train:
  gpus: -1
- precision: 32       # todo
+ precision: 32
  gradient_clip_val: 3.0
 text_encoder:
  weight_decay: 0.0

@@ -72,7 +72,7 @@ class PLMEncoder(PretrainedTextEncoder):
             is_random_init=True,
             tokenizer=tokenizer,
             huggingface_offline=cfg.huggingface_offline,
-            model_name=cfg.qian_architecture,
+            model_name=cfg.architecture,
         )
         self.hidden_size = self.PLM.config.n_embd
 
@@ -101,7 +101,7 @@ class PLMEncoder(PretrainedTextEncoder):
 class LMEncoder(PretrainedTextEncoder):
     def __init__(self, cfg: TextEncoderConfig):
         super().__init__(cfg)
-        self.LM = LM(huggingface_offline=cfg.huggingface_offline, model_name=cfg.qian_architecture)
+        self.LM = LM(huggingface_offline=cfg.huggingface_offline, model_name=cfg.architecture)
         self.hidden_size = self.LM.config.n_embd
 
         if cfg.lm_checkpoint is not None:
@@ -126,7 +126,7 @@ class TGEncoder(PretrainedTextEncoder):
             is_random_init=True,
             tokenizer=tokenizer,
             huggingface_offline=cfg.huggingface_offline,
-            model_name=cfg.qian_architecture,
+            model_name=cfg.architecture,
         )
         self.hidden_size = self.tg.config.n_embd
 
@@ -174,11 +174,7 @@ class TokenCLIPTextEncoder(PretrainedTextEncoder):
         x = x + self.clip_model.positional_embedding.type(self.clip_model.dtype)
         x = x.permute(1, 0, 2)  # NLD -> LND
 
-        if not self.cfg.clip_token_embs_from_2nd_but_last:
-            x = self.clip_model.transformer(x)
-        else:
-            for resblock in self.clip_model.transformer.resblocks[:-1]:
-                x = resblock(x)
+        x = self.clip_model.transformer(x)
 
         x = x.permute(1, 0, 2)  # LND -> NLD
         x = self.clip_model.ln_final(x).type(self.clip_model.dtype)

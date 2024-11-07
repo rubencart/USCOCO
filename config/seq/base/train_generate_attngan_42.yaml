@@ -25,7 +25,7 @@ deterministic: False
 use_smart_filter: True
 train:
  gpus: -1
- precision: 32       # todo
+ precision: 32
  max_steps: -1
  gradient_clip_val: 3.0
 

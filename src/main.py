@@ -116,6 +116,7 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
     wandb_logger = WandbLogger(
         name=os.path.split(run_output_dir)[1],
         project=cfg.wandb_project_name,
+        entity=cfg.wandb_org_name,
         save_dir=run_output_dir,
         offline=cfg.wandb_offline,
         save_code=True,
@@ -215,11 +216,6 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
     if cfg.continue_training_from_checkpoint:
         trainer_kwargs.update({
             "resume_from_checkpoint": cfg.checkpoint,
-        })
-
-    if cfg.running_on_vsc_server and not cfg.debug:
-        trainer_kwargs.update({
-            "enable_progress_bar": False,
         })
 
     return trainer_kwargs, model_checkpoint
