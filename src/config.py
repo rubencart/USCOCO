@@ -253,10 +253,6 @@ class TextEncoderConfig(Tap):
 
     architecture: str = "gpt2"  # gtp2, gpt2-medium, gpt2-large
 
-    # lm_checkpoint = './models/pretrained_text_encoders/xlm_bllip-lg_rand-init_1101_5.params'  # use this one
-    # lm_checkpoint = './models/pretrained_text_encoders/xlm_bllip-lg_rand-init_1103_5.params'
-    # tg_checkpoint = './models/pretrained_text_encoders/tg_37927.params'
-
 
 class TrainConfig(Tap):
     accelerator: str = "gpu"
@@ -367,7 +363,7 @@ class Config(Tap):
     dataset: str = "coco17"
     captions: str = "coco"
     # todo
-    wandb_project_name: str = "MMMAliGen"
+    wandb_project_name: str = "USCOCO"
     wandb_org_name = "liir-kuleuven"
     save_probe_embeddings: bool = False
     save_probe_embeddings_train: bool = False
@@ -507,9 +503,6 @@ class Config(Tap):
     model_checkpoint_monitor: str = "f1_iou_05"
 
     sample_loss_weights: bool = False
-
-    image_size: int = 256
-    find_unused_params: bool = False
 
     total_parameters: int = 0
     trainable_parameters: int = 0
