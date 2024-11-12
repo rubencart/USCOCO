@@ -41,12 +41,27 @@ Edit or copy a `.yaml` file in `config/` and change the settings, or change the 
 Set `train_image_dir`, `val_image_dir`, `train_captions`, `val_captions`, `train_instances`, `val_instances` 
 to where you downloaded the COCO dataset (images + captions and instances json's, all in the 2017 version).
 Unzip all the `.zip` files in `data/`.
-
+Run with:
 ```
-CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/train_generate.yaml --seed 42
+CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg.yaml --seed 42
+```
+
+Checkpoints of pretrained text encoders are downloaded from the Huggingface hub. 
+GPT-2 checkpoints were already available, TG, PLM, PLM_mask and AttnGAN checkpoints have been uploaded to
+https://huggingface.co/rubencart.
+These can be automatically downloaded when starting a run with the following settings (already set in the `.yaml` files
+in `config/` where necessary).
+```
+text_encoder:
+ download_from_hub: True
+ hub_path: "rubencart/TG_sm_text_encoder"
+ # hub_path: "rubencart/GPT-2_Bllip_sm_text_encoder"
+ # hub_path: ...
 ```
 
 ### Use trained models for inference
+
+Coming soon...
 
 ## Replicate experiments
 
