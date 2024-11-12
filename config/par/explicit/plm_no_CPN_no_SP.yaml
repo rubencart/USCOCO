@@ -15,7 +15,6 @@ lr_schedule: 'linear_with_warmup'
 lr_schedule_warmup_epochs: 5
 debug: False
 wandb_offline: False
-debug_max_epochs: 190
 debug_num_workers: 0
 deterministic: False
 use_latent_tree_representations: False

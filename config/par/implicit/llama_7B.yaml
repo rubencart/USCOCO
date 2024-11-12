@@ -28,8 +28,8 @@ text_encoder:
  txt_enc_finetune: False
  txt_enc_pretrained: True
  text_encoder: 'huggingface'
- hf_model_name_or_path: 'path/to/llama/hf_llama_7B/'
- hf_tokenizer_model_name_or_path: 'path/to/llama/hf_llama_7B/'
+ hf_model_name_or_path: '/path/to/llama/hf_llama_7B/'
+ hf_tokenizer_model_name_or_path: '/path/to/llama/hf_llama_7B/'
  use_llama: True
 model:
  predict_num_queries: True

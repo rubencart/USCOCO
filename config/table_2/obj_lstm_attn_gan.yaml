@@ -33,9 +33,6 @@ text_encoder:
  hf_model_name_or_path: 'gpt2'
  hf_tokenizer_model_name_or_path: 'gpt2'
  text_encoder: attn_gan
-   #  attn_gan_text_encoder_path: '/scratch/leuven/335/vsc33568/MMMAli/output/2022_02_09_15_06_14_attngan-train_lrg_41/checkpoints/last.ckpt'
-   #  attn_gan_text_encoder_path: '/cw/working-frodo/rubenc/MMMAli/output/2022_02_09_15_06_14_attngan-train_lrg_41/checkpoints/last.ckpt'
-# attn_gan_text_encoder_path: '/data/leuven/335/vsc33568/MMMAli-dev/data/2022_04_25_16_04_28_attngan-train-v2-lrg_41/checkpoints/epoch=248-step=588885.ckpt'
  attn_gan_text_encoder_path: './models/pretrained_text_encoders/AttnGAN_lrg.ckpt'
  attn_gan_text_encoder_input_dim: 1560
  attn_gan_text_encoder_hidden_dim: 1560

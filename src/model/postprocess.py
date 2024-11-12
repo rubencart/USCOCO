@@ -126,6 +126,12 @@ class PostProcess(nn.Module):
         xywh_boxes_flipped = utils.box_xyxy_to_xywh(utils.box_cxcywh_to_xyxy(boxes_flipped))
         scaled_boxes_flipped = xywh_boxes_flipped * scale_fct[:, None, :]
 
+        def get_or_none(name):
+            if name in batch and batch[name] is not None:
+                return batch[name]
+            else:
+                return scores.shape[0] * [None]
+
         results = [
             {
                 "image_id": img_id,
@@ -182,12 +188,12 @@ class PostProcess(nn.Module):
                 xywh_boxes_flipped,
                 # outputs['sim_scores']
                 # outputs['text_embed'], outputs['text_lens'],
-                batch.get("tokens", scores.shape[0] * [None]),
+                get_or_none("tokens"),
                 labels,
-                batch.get("tree_node_pos", scores.shape[0] * [None]),
-                batch.get("tree_node_mask", scores.shape[0] * [None]),
-                batch.get("span_list", scores.shape[0] * [None]),
-                batch.get("span_list_tokens", scores.shape[0] * [None]),
+                get_or_none("tree_node_pos"),
+                get_or_none("tree_node_mask"),
+                get_or_none("span_list"),
+                get_or_none("span_list_tokens"),
             )
         ]
         if self.cfg.save_probe_embeddings:

@@ -14,7 +14,7 @@ dependencies:
   - scikit-learn
   - python-dateutil
   - jsonschema
-  - transformers
+  - transformers=4.28
   - seaborn
   - h5py
   - pip

@@ -58,7 +58,7 @@ class Tokenizer(ABC):
         elif cfg.text_encoder == "plm":
             return TGTokenizer(cfg, use_tg=False)
         else:
-            assert cfg.text_encoder == "sent_clip"
+            assert cfg.text_encoder == "sent_clip", cfg.text_encoder
             return ClipTokenizer(cfg)
 
 

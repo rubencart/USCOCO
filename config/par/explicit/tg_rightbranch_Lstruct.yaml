@@ -1,6 +1,6 @@
 dataset: 'coco17'
 captions: 'coco'
-cfg_name: 'TG_rb'
+cfg_name: 'TG_rb_Lstruct_025'
 wandb_project_name: 'USCOCO'
 cuda: True
 pin_memory: True

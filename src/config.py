@@ -256,7 +256,7 @@ class TextEncoderConfig(Tap):
 
 class TrainConfig(Tap):
     accelerator: str = "gpu"
-    max_epochs: int = 300
+    max_epochs: int = 2
     min_epochs: int = 0
     max_steps: int = -1
     precision: int = 32
@@ -437,9 +437,9 @@ class Config(Tap):
     # load_smart_filter_from_file: bool = False
     smart_filter_compound_combination_type = "or"  # and | or
     # ('./data/sf_1.pkl', './data/sf_2.pkl')  # (None, None)
-    smart_filter_pretrained_file: tuple = (None, None)
+    smart_filter_pretrained_file: tuple = ("./data/sf_1.pkl", "./data/sf_2.pkl")
     # ('./data/sf_1.pkl', './data/sf_2.pkl')
-    smart_filter_save_file: tuple = (None, None)
+    smart_filter_save_file: tuple = ("./data/sf_1.pkl", "./data/sf_2.pkl")
     smart_filter_normalize_dist: tuple = (True, True)
     smart_filter_distr_type: tuple = ("avgmax", "avgmax")  # avg | avgmax
     smart_filter_dist_type: tuple = ("reltomax", "abs")  # reltomax | abs
@@ -484,17 +484,12 @@ class Config(Tap):
     do_test: bool = False
     do_validate: bool = False
     do_validate_during_training: bool = True
-    base_size: int = 64
-    batch_size: int = 24
-    val_batch_size: int = 24
-    captions_per_image: int = 5
+    batch_size: int = 128
+    val_batch_size: int = 128
     num_words: int = 40
 
     optimize_data_loading: bool = True
     empty_cache: bool = False
-    start_early_stopping_after_epochs: int = 30
-    num_imgs_to_generate_for_valid: int = 1000
-    recompute_val_image_generation_subset: bool = False
 
     early_stop: str = "f1_iou_05"
     early_stop_min_or_max: str = "max"

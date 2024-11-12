@@ -212,8 +212,18 @@ class AttnGANTextEncoder(PretrainedTextEncoder):
             checkpoint = torch.load(
                 cfg.attn_gan_text_encoder_path, map_location=lambda storage, loc: storage
             )
-            assert "pytorch-lightning_version" not in checkpoint and "callbacks" not in checkpoint
-            self.attn_gan_model.load_state_dict(checkpoint)
+            # assert "pytorch-lightning_version" not in checkpoint and "callbacks" not in checkpoint
+            state_dict = {
+                k.replace("text_encoder.transformer.", ""): v
+                for (k, v) in checkpoint["state_dict"].items()
+            }
+            try:
+                self.attn_gan_model.load_state_dict(state_dict)
+            except RuntimeError as e:
+                print(repr(e))
+                if "Missing key(s) in state_dict:" in repr(e):
+                    print("Loading with strict=False")
+                    self.attn_gan_model.load_state_dict(state_dict, strict=False)
 
         self.hidden_size = self.attn_gan_model.hidden_dim
 

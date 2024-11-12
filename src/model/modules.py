@@ -389,7 +389,7 @@ class DETRGenerationModel(_SuperModel):
                 max_pred_lengths
             ).repeat((bs, 1)) >= max_pred_lengths.unsqueeze(1)
 
-            max_pred_length = max_pred_lengths.max()
+            max_pred_length = max_pred_lengths.max().long()
             query_embed = query_embed[:, :max_pred_length] if query_embed is not None else None
             tgt = tgt[:, :max_pred_length]
 
