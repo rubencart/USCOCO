@@ -581,7 +581,7 @@ class Txt2ImgSetCriterion(SetCriterion):
                 img_lens=outputs["obj_lens"],
             )
             loss_dict["struct_loss"] = struct_loss
-            loss_dict["sim_scores"] = sim_scores.detach().cpu()
+            # loss_dict["sim_scores"] = sim_scores.detach().cpu()
             losses += self.struct_loss_weight * struct_loss
 
         # weighted sum of aux losses, reformat aux losses

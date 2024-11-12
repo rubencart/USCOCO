@@ -137,3 +137,7 @@ cache/
 output/*
 models/*
 data/*
+src/scripts/
+
+llama_30B_vsc.yaml
+run.slurm

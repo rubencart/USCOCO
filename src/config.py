@@ -167,14 +167,16 @@ class ObjGANConfig(Tap):
 class TextEncoderConfig(Tap):
     text_encoder: Literal[
         "huggingface",
-        "clip",
+        "sent_clip",
         "vokenization",
         "attn_gan",
         "plm",
-        "qian_base_lm",
+        "gpt2_bllip",
         "tg",
     ] = "huggingface"
     txt_enc_pretrained: bool = True
+    download_from_hub: bool = False
+    hub_path: str = ""
     txt_enc_finetune: bool = False
     num_words: int = 40
 
@@ -182,13 +184,8 @@ class TextEncoderConfig(Tap):
     # hf_tokenizer_model_name_or_path: str = 'bert-base-uncased'
     # hf_model_name_or_path: str = 'uclanlp/visualbert-vqa-coco-pre'
 
-    # vokenization
-    # hf_tokenizer_model_name_or_path: str = 'roberta-base'
-    # hf_model_name_or_path: str = '/cw/working-arwen/damien/checkpoints/clib/vokenization'
-
     # clip
     clip_model_name: str = "ViT-B/32"
-    clip_token_embs_from_2nd_but_last: bool = False
 
     # huggingface
     hf_model_type: str = "roberta"
@@ -212,7 +209,7 @@ class TextEncoderConfig(Tap):
     attn_gan_text_encoder_input_dim: int = 1560
     attn_gan_text_encoder_hidden_dim: int = 1560
     # todo
-    attn_gan_text_encoder_path = "/cw/liir_code/NoCsBack/rubenc/AttnGAN/output/coco_DAMSM_2021_12_15_12_00_30_debug/Model/text_encoder_best.pth"
+    attn_gan_text_encoder_path = "./models/AttnGAN-lrg.pth"
     attn_gan_vocab_path: str = "./data/vpcfg_coco.dict.pkl"
     attn_gan_text_encoder_dropout: float = 0.5
     attn_gan_text_encoder_nlayers: int = 2
@@ -232,38 +229,36 @@ class TextEncoderConfig(Tap):
     txt_enc_num_layers: int = 8
     txt_enc_dropout: float = 0.1
 
-    # PLM
     # todo
-    plm_checkpoint: str = (
-        "/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/xplm_bllip-lg_rand-init_1101_5.params"
-    )
-    # plm_checkpoint: str = '/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/xplm-mask_bllip-lg_rand-init_1101_5.params'
+    # PLM
+    plm_checkpoint: str = "./models/pretrained_text_encoders/xplm_bllip-lg_rand-init_1101_5.params"
+    # in case you want to use the PLM_mask model, uncomment the next line and set
+    #   plm_add_structured_mask to True
+    # plm_checkpoint: str = './models/pretrained_text_encoders/xplm-mask_bllip-lg_rand-init_1101_5.params'
     plm_add_structured_mask: bool = False
-    lm_checkpoint: str = (
-        "/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/xlm_bllip-lg_rand-init_1103_5.params"
-    )
-    # lm_checkpoint: str = '/staging/leuven/stg_00114/transformers-struct-guidance/model/lm_gpt2-medium.params'
-    # lm_checkpoint: str = '/staging/leuven/stg_00114/transformers-struct-guidance/model/lm_gpt2-large.params'
+
+    # GPT-2_Bllip small (the lg concerns the bllip dataset)
+    # lm_checkpoint: str = "./models/pretrained_text_encoders/xlm_bllip-lg_rand-init_1103_5.params"
+    lm_checkpoint: str = "./models/pretrained_text_encoders/xlm_bllip-lg_rand-init_1101_5.params"
+    # lm_checkpoint: str = './models/pretrained_text_encoders/lm_gpt2-medium.params'
+    # lm_checkpoint: str = './models/pretrained_text_encoders/lm_gpt2-large.params'
 
     # TG
-    # right branching
-    # tg_checkpoint: str = '/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/rightBranch_tg_37927.params'
-    tg_checkpoint: str = (  # gpt2-small
-        "/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/tg_37927.params"
-    )
-    # tg_checkpoint: str = '/cw/liir_code/NoCsBack/rubenc/transformers-struct-guidance/model/tg_37928.params' # gpt2-large
-    # tg_checkpoint: str = '/cw/liir_code/NoCsBack/rubenc/transformers-struct-guidance/model/tg_md_37928.params' # gpt2-medium
+    # For right branching, uncomment the next line and set tg_right_branching to True
+    # tg_checkpoint: str = './models/pretrained_text_encoders/rightBranch_tg_37927.params'
     tg_right_branching: bool = False
-    qian_architecture: str = "gpt2"  # gpt2-medium,...
 
-    # lm_checkpoint = '/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/xlm_bllip-lg_rand-init_1101_5.params'  # use this one
-    # lm_checkpoint = '/cw/liir_code/NoCsBack/rubenc/MMMAli-dev/models/xlm_bllip-lg_rand-init_1103_5.params'
-    # tg_checkpoint = '/cw/liir_code/NoCsBack/wolf/projects/transformers-struct-guidance/model/tg_37927.params'
+    # TG with gpt2-small (?):
+    tg_checkpoint: str = "./models/pretrained_text_encoders/tg_37927.params"
+    # tg_checkpoint: str = './models/pretrained_text_encoders/tg_37928.params' # gpt2-large
+    # tg_checkpoint: str = './models/pretrained_text_encoders/tg_md_37928.params' # gpt2-medium
+
+    architecture: str = "gpt2"  # gtp2, gpt2-medium, gpt2-large
 
 
 class TrainConfig(Tap):
     accelerator: str = "gpu"
-    max_epochs: int = 300
+    max_epochs: int = 2
     min_epochs: int = 0
     max_steps: int = -1
     precision: int = 32
@@ -323,13 +318,20 @@ class ProbeConfig(Tap):
     # '/cw/working-arwen/rubenc/MMMAli/output/2022_10_03_16_21_06_detr_s-43_qian/test_run/id_to_h5_idx.json',
     # '/cw/working-arwen/rubenc/MMMAli/output/2022_09_28_11_13_01_detr_s-42_qian-struct_attn25/test_run/id_to_h5_idx.json'
 
+    # 2023_04_26_09_25_46_detr_s-43_TG-lg
+    # /cw/working-frodo/rubenc/MMMAli/output/2023_05_03_18_07_42_detr_s-44_TG-lg-attn25
+
+    # 2023_04_24_15_25_46_detr_s-42_detr-llama
+    # 2023_04_26_10_36_06_detr_s-43_detr-llama30B
+
+    # /cw/working-arwen/rubenc/MMMAli/output/2023_04_27_18_15_35_detr_s-43_qian-base-lg
+    # /cw/working-arwen/rubenc/MMMAli/output/2023_04_27_18_15_35_detr_s-43_qian-base-lg-attn50
+
+    # /cw/working-arwen/rubenc/MMMAli/output/2022_10_13_08_42_23_detr_s-41_detr-qian-base-shuffle
+
     # todo
-    h5_path: str = (
-        "/cw/working-arwen/rubenc/MMMAli/output/2022_10_03_16_21_45_detr_s-41_TG/test_run/probe_embeddings.h5"
-    )
-    h5_index_path: str = (
-        "/cw/working-arwen/rubenc/MMMAli/output/2022_10_03_16_21_45_detr_s-41_TG/test_run/id_to_h5_idx.json"
-    )
+    h5_path: str = "./output/???/test_run/probe_embeddings.h5"
+    h5_index_path: str = "./output/???/test_run/id_to_h5_idx.json"
     # embedding_model: Literal['TG', 'LM'] = 'TG'
 
     learn_negative_constituents: bool = True
@@ -362,9 +364,9 @@ class ProbeConfig(Tap):
 class Config(Tap):
     dataset: str = "coco17"
     captions: str = "coco"
-    mode: str = "generate"
-    wandb_project_name: str = "MMMAliGen"
-    running_on_vsc_server: bool = False
+    # todo
+    wandb_project_name: str = "USCOCO"
+    wandb_org_name = "liir-kuleuven"
     save_probe_embeddings: bool = False
     save_probe_embeddings_train: bool = False
 
@@ -437,9 +439,9 @@ class Config(Tap):
     # load_smart_filter_from_file: bool = False
     smart_filter_compound_combination_type = "or"  # and | or
     # ('./data/sf_1.pkl', './data/sf_2.pkl')  # (None, None)
-    smart_filter_pretrained_file: tuple = (None, None)
+    smart_filter_pretrained_file: tuple = ("./data/sf_1.pkl", "./data/sf_2.pkl")
     # ('./data/sf_1.pkl', './data/sf_2.pkl')
-    smart_filter_save_file: tuple = (None, None)
+    smart_filter_save_file: tuple = ("./data/sf_1.pkl", "./data/sf_2.pkl")
     smart_filter_normalize_dist: tuple = (True, True)
     smart_filter_distr_type: tuple = ("avgmax", "avgmax")  # avg | avgmax
     smart_filter_dist_type: tuple = ("reltomax", "abs")  # reltomax | abs
@@ -472,7 +474,7 @@ class Config(Tap):
     deterministic: bool = False
     wandb_offline: bool = False
 
-    output_dir: str = "output"
+    output_dir: str = "./output"
     run_output_dir: str = ""
     cuda: bool = True
     pin_memory: bool = True
@@ -484,20 +486,12 @@ class Config(Tap):
     do_test: bool = False
     do_validate: bool = False
     do_validate_during_training: bool = True
-    base_size: int = 64
-    batch_size: int = 24
-    val_batch_size: int = 24
-    captions_per_image: int = 5
+    batch_size: int = 128
+    val_batch_size: int = 128
     num_words: int = 40
 
     optimize_data_loading: bool = True
     empty_cache: bool = False
-    start_early_stopping_after_epochs: int = 30
-    num_imgs_to_generate_for_valid: int = 1000
-    recompute_val_image_generation_subset: bool = False
-    fid_batch_size: int = 30
-    fid_dimensions: int = 2048
-    fid_workers: int = 0
 
     early_stop: str = "f1_iou_05"
     early_stop_min_or_max: str = "max"
@@ -506,11 +500,6 @@ class Config(Tap):
     model_checkpoint_monitor: str = "f1_iou_05"
 
     sample_loss_weights: bool = False
-    compute_fid_rprecision_test: bool = False
-    compute_fid_rprecision_val: bool = False
-
-    image_size: int = 256
-    find_unused_params: bool = False
 
     total_parameters: int = 0
     trainable_parameters: int = 0

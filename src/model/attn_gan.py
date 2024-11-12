@@ -154,6 +154,7 @@ class RNNTextEncoder(nn.Module):
 
         if len(tokenizer) > self.encoder.num_embeddings:
             num = len(tokenizer) - self.encoder.num_embeddings
+            logger.info(f"Initializing {num} new AttnGAN encoder embeddings")
             self.encoder.weight = nn.Parameter(
                 torch.cat(
                     (

@@ -114,8 +114,9 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
     tags += [str(cfg.seed)]
     # todo resume wandb if cfg.continue_training_from_checkpoint...
     wandb_logger = WandbLogger(
-        name=os.path.split(run_output_dir)[1],
+        name=f"{os.path.split(run_output_dir)[1]}_{cfg.cfg_name}",
         project=cfg.wandb_project_name,
+        entity=cfg.wandb_org_name,
         save_dir=run_output_dir,
         offline=cfg.wandb_offline,
         save_code=True,
@@ -137,8 +138,6 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
         ("delta_pairwise_norm_width_height_diffs", "min"),
         ("delta_pairwise_x_distances_norm_w", "min"),
         ("delta_pairwise_y_distances_norm_h", "min"),
-        ("fid", "min"),
-        ("r_precision", "max"),
         ("f1_iou_05", "max"),
         ("f1_iou_00", "max"),
     ):
@@ -219,16 +218,11 @@ def build_trainer_kwargs(cfg: Config, run_output_dir: str) -> Tuple[Dict, ModelC
             "resume_from_checkpoint": cfg.checkpoint,
         })
 
-    if cfg.running_on_vsc_server and not cfg.debug:
-        trainer_kwargs.update({
-            "enable_progress_bar": False,
-        })
-
     return trainer_kwargs, model_checkpoint
 
 
 def make_model(
-    dm: COCODataModule, cfg: Config, tokenizer: Tokenizer, init_rprecision_model: bool = True
+    dm: COCODataModule, cfg: Config, tokenizer: Tokenizer
 ) -> Tuple[pl.LightningModule, Type[pl.LightningModule]]:
     if cfg.model.obj_gan:
         module_class = ObjGANGenerationModule
@@ -246,7 +240,6 @@ def make_model(
                 category_dict=dm.category_dict,
                 pos_dict=dm.pos_dict,
                 tokenizer=tokenizer,
-                init_rprecision_model=init_rprecision_model,
                 strict=not cfg.text_encoder.use_llama,
             )
         except RuntimeError as e:
@@ -258,7 +251,6 @@ def make_model(
                 category_dict=dm.category_dict,
                 pos_dict=dm.pos_dict,
                 tokenizer=tokenizer,
-                init_rprecision_model=init_rprecision_model,
                 strict=False,
             )
 
@@ -269,7 +261,6 @@ def make_model(
             category_dict=dm.category_dict,
             pos_dict=dm.pos_dict,
             tokenizer=tokenizer,
-            # automatic_optimization=False
         )
 
     return model, module_class

@@ -137,6 +137,7 @@ def build_trainer_kwargs(
     wandb_logger = WandbLogger(
         name=run_name,
         project=cfg.wandb_project_name,
+        entity=cfg.wandb_org_name,
         save_dir=run_output_dir,
         offline=cfg.wandb_offline,
         save_code=True,
@@ -213,11 +214,6 @@ def build_trainer_kwargs(
             })
     if not cfg.do_validate_during_training:
         trainer_kwargs.update({"limit_val_batches": 0.0})
-
-    if cfg.running_on_vsc_server and not cfg.debug:
-        trainer_kwargs.update({
-            "enable_progress_bar": False,
-        })
 
     return trainer_kwargs, model_checkpoint
 

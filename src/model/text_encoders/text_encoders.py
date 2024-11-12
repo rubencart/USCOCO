@@ -72,12 +72,12 @@ class PLMEncoder(PretrainedTextEncoder):
             is_random_init=True,
             tokenizer=tokenizer,
             huggingface_offline=cfg.huggingface_offline,
-            model_name=cfg.qian_architecture,
+            model_name=cfg.architecture,
         )
         self.hidden_size = self.PLM.config.n_embd
 
-        if cfg.plm_checkpoint is not None:
-            logger.info("Load parameters from {}".format(cfg.plm_checkpoint))
+        if not cfg.download_from_hub and cfg.plm_checkpoint is not None:
+            logger.info("Load parameters from file {}".format(cfg.plm_checkpoint))
             checkpoint = torch.load(cfg.plm_checkpoint)
             self.PLM.model.load_state_dict(checkpoint["model_state_dict"])
 
@@ -99,13 +99,13 @@ class PLMEncoder(PretrainedTextEncoder):
 
 
 class LMEncoder(PretrainedTextEncoder):
-    def __init__(self, cfg: TextEncoderConfig):
+    def __init__(self, cfg: TextEncoderConfig, tokenizer):
         super().__init__(cfg)
-        self.LM = LM(huggingface_offline=cfg.huggingface_offline, model_name=cfg.qian_architecture)
+        self.LM = LM(huggingface_offline=cfg.huggingface_offline, model_name=cfg.architecture)
         self.hidden_size = self.LM.config.n_embd
 
-        if cfg.lm_checkpoint is not None:
-            logger.info("Load parameters from {}".format(cfg.lm_checkpoint))
+        if not cfg.download_from_hub and cfg.lm_checkpoint is not None:
+            logger.info("Load parameters from file {}".format(cfg.lm_checkpoint))
             checkpoint = torch.load(cfg.lm_checkpoint)
             self.LM.model.load_state_dict(checkpoint["model_state_dict"])
 
@@ -126,12 +126,12 @@ class TGEncoder(PretrainedTextEncoder):
             is_random_init=True,
             tokenizer=tokenizer,
             huggingface_offline=cfg.huggingface_offline,
-            model_name=cfg.qian_architecture,
+            model_name=cfg.architecture,
         )
         self.hidden_size = self.tg.config.n_embd
 
-        if cfg.tg_checkpoint is not None and cfg.tg_checkpoint:
-            logger.info("Load parameters from {}".format(cfg.tg_checkpoint))
+        if not cfg.download_from_hub and cfg.tg_checkpoint is not None:
+            logger.info("Load parameters from file {}".format(cfg.tg_checkpoint))
             checkpoint = torch.load(cfg.tg_checkpoint)
             self.tg.model.load_state_dict(checkpoint["model_state_dict"])
 
@@ -174,11 +174,7 @@ class TokenCLIPTextEncoder(PretrainedTextEncoder):
         x = x + self.clip_model.positional_embedding.type(self.clip_model.dtype)
         x = x.permute(1, 0, 2)  # NLD -> LND
 
-        if not self.cfg.clip_token_embs_from_2nd_but_last:
-            x = self.clip_model.transformer(x)
-        else:
-            for resblock in self.clip_model.transformer.resblocks[:-1]:
-                x = resblock(x)
+        x = self.clip_model.transformer(x)
 
         x = x.permute(1, 0, 2)  # LND -> NLD
         x = self.clip_model.ln_final(x).type(self.clip_model.dtype)
@@ -208,16 +204,26 @@ class AttnGANTextEncoder(PretrainedTextEncoder):
         super().__init__(cfg)
 
         self.attn_gan_model = RNNTextEncoder(cfg, tokenizer)
-        if cfg.txt_enc_pretrained:
+        if not cfg.download_from_hub and cfg.txt_enc_pretrained:
             logger.info(
-                "Initializing AttnGAN text encoder from pretrained weights at %s"
+                "Initializing AttnGAN text encoder from pretrained weights at file %s"
                 % cfg.attn_gan_text_encoder_path
             )
             checkpoint = torch.load(
                 cfg.attn_gan_text_encoder_path, map_location=lambda storage, loc: storage
             )
-            assert "pytorch-lightning_version" not in checkpoint and "callbacks" not in checkpoint
-            self.attn_gan_model.load_state_dict(checkpoint)
+            # assert "pytorch-lightning_version" not in checkpoint and "callbacks" not in checkpoint
+            state_dict = {
+                k.replace("text_encoder.transformer.", ""): v
+                for (k, v) in checkpoint["state_dict"].items()
+            }
+            try:
+                self.attn_gan_model.load_state_dict(state_dict)
+            except RuntimeError as e:
+                print(repr(e))
+                if "Missing key(s) in state_dict:" in repr(e):
+                    print("Loading with strict=False")
+                    self.attn_gan_model.load_state_dict(state_dict, strict=False)
 
         self.hidden_size = self.attn_gan_model.hidden_dim
 

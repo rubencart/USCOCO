@@ -56,6 +56,7 @@ class GenerationModule(pl.LightningModule, ABC):
     ):
         super().__init__()
         if not isinstance(cfg.text_encoder, TextEncoderConfig):
+            print(type(cfg.text_encoder))
             print(cfg.text_encoder)
             cfg.process_args(process=False)
             # cfg.process_args()
@@ -89,25 +90,12 @@ class GenerationModule(pl.LightningModule, ABC):
             checkpoint["state_dict"] = state_dict
 
     def configure_optimizers(self):
-        # https://forums.pytorchlightning.ai/t/effective-learning-rate-and-batch-size-with-lightning-in-ddp/101/7
-        # https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel
-        # --> if loss is averaged, not necessary!
-        # EDIT: yes, still better, because more samples => better estimate of true loss
-
         params = list(self.named_parameters())
 
-        def is_rprecision_model(n):
-            return "rp_model" in n
-
         def is_text_enc(n):
-            return "text_encoder" in n and not is_rprecision_model(n)
+            return "text_encoder" in n
 
-        params_and_configs = [
-            (
-                [p for n, p in params if not is_text_enc(n) and not is_rprecision_model(n)],
-                self.cfg.detr,
-            )
-        ]
+        params_and_configs = [([p for n, p in params if not is_text_enc(n)], self.cfg.detr)]
         if self.cfg.model.train_text_encoder:
             params_and_configs += [
                 ([p for n, p in params if is_text_enc(n)], self.cfg.text_encoder)

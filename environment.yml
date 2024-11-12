@@ -6,26 +6,26 @@ channels:
 dependencies:
   - cudatoolkit=11.1
   - python=3.8
-  - cython
   - pytorch>=1.12
   - torchvision
   - tqdm
   - easydict
   - nltk
-  - scikit-image
   - scikit-learn
   - python-dateutil
   - jsonschema
-  - transformers
+  - transformers=4.28
   - seaborn
+  - h5py
   - pip
   - ipython
   - pip:
       - jsonargparse
       - typed-argument-parser
       - pycocotools
-      - plotly
       - pytorch-lightning=1.6
       - wandb
-      - ftfy
-      - regex
+      - typed-argument-parser
+      - tqdm
+      - albumentations
+      - iglovikov_helper_functions

@@ -22,6 +22,7 @@ from model.detr_transformer import (
 )
 from model.obj_gan import DecoderRNN
 from model.position_enc import PositionalTreeEncoder
+from model.text_encoders import build_text_encoder
 from model.text_encoders.pretrained import PretrainedTextEncoder
 from model.text_encoders.text_encoders import SequenceEncoder
 
@@ -72,7 +73,7 @@ class _SuperModel(nn.Module):
         self.category_dict = category_dict
         self.pos_dict = pos_dict
 
-        self.text_encoder = PretrainedTextEncoder.build_text_encoder(cfg, tokenizer)
+        self.text_encoder = build_text_encoder(cfg, tokenizer)
 
         self.detr_encoder = cfg.model.use_additional_detr_encoder
         self.text_enc_hdim = self.text_encoder.hidden_size
@@ -207,24 +208,11 @@ class _SuperModel(nn.Module):
                 "huggingface",
                 "vokenization",
                 "attn_gan",
-                "qian_base_lm",
+                "gpt2_bllip",
             )
         ):
             length_states = states_for_length[:, 0, :]
             sent_embs, rest_embs = sequence_states[:, 0, :], sequence_states[:, 1:, :]
-        elif self.cfg.text_encoder.text_encoder == "clip":
-            bs, L = input_ids.shape
-            # eos token is used in CLIP model, id is greatest of vocab
-            eos_indices = input_ids.argmax(dim=-1)
-            restmask = (
-                torch.ones(bs, L)
-                .type_as(eos_indices)
-                .scatter_(1, eos_indices.unsqueeze(1), 0.0)
-                .bool()
-            )
-            length_states = states_for_length[torch.arange(bs), eos_indices]
-            sent_embs = sequence_states[torch.arange(bs), eos_indices]
-            rest_embs = sequence_states[restmask].view(bs, L - 1, -1)
         elif self.cfg.text_encoder.text_encoder == "sent_clip":
             length_states = states_for_length[:, 0]
             sent_embs = sequence_states
@@ -402,7 +390,7 @@ class DETRGenerationModel(_SuperModel):
                 max_pred_lengths
             ).repeat((bs, 1)) >= max_pred_lengths.unsqueeze(1)
 
-            max_pred_length = max_pred_lengths.max()
+            max_pred_length = max_pred_lengths.max().long()
             query_embed = query_embed[:, :max_pred_length] if query_embed is not None else None
             tgt = tgt[:, :max_pred_length]
 
