@@ -31,6 +31,8 @@ text_encoder:
  text_encoder: gpt2_bllip
  hf_model_name_or_path: 'gpt2'
  hf_tokenizer_model_name_or_path: 'gpt2'
+ download_from_hub: True
+ hub_path: "rubencart/GPT-2_Bllip_sm_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: True

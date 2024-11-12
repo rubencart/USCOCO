@@ -36,6 +36,8 @@ text_encoder:
  text_encoder: 'tg'
  tg_checkpoint: "./models/pretrained_text_encoders/tg_37928.params"
  architecture: 'gpt2-large'
+ download_from_hub: True
+ hub_path: "rubencart/TG_lg_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: False

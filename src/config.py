@@ -175,6 +175,8 @@ class TextEncoderConfig(Tap):
         "tg",
     ] = "huggingface"
     txt_enc_pretrained: bool = True
+    download_from_hub: bool = False
+    hub_path: str = ""
     txt_enc_finetune: bool = False
     num_words: int = 40
 

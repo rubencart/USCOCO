@@ -32,6 +32,8 @@ text_encoder:
  hf_model_name_or_path: 'gpt2'
  hf_tokenizer_model_name_or_path: 'gpt2'
  lm_checkpoint: "./models/pretrained_text_encoders/xlm_bllip-lg_rand-init_1101_5.params"
+ download_from_hub: True
+ hub_path: "rubencart/GPT-2_Bllip_sm_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: False

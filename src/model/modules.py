@@ -22,6 +22,7 @@ from model.detr_transformer import (
 )
 from model.obj_gan import DecoderRNN
 from model.position_enc import PositionalTreeEncoder
+from model.text_encoders import build_text_encoder
 from model.text_encoders.pretrained import PretrainedTextEncoder
 from model.text_encoders.text_encoders import SequenceEncoder
 
@@ -72,7 +73,7 @@ class _SuperModel(nn.Module):
         self.category_dict = category_dict
         self.pos_dict = pos_dict
 
-        self.text_encoder = PretrainedTextEncoder.build_text_encoder(cfg, tokenizer)
+        self.text_encoder = build_text_encoder(cfg, tokenizer)
 
         self.detr_encoder = cfg.model.use_additional_detr_encoder
         self.text_enc_hdim = self.text_encoder.hidden_size

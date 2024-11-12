@@ -38,6 +38,8 @@ text_encoder:
  attn_gan_text_encoder_hidden_dim: 1560
  attn_gan_text_encoder_nlayers: 2
  attn_gan_text_encoder_bidirectional: True
+ download_from_hub: True
+ hub_path: "rubencart/AttnGAN_text_encoder"
 model:
  autoregressive: True
  obj_gan: True

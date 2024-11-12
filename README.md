@@ -43,7 +43,7 @@ to where you downloaded the COCO dataset (images + captions and instances json's
 Unzip all the `.zip` files in `data/`.
 
 ```
-TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/train_generate.yaml --seed 42
+CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/implicit/train_generate.yaml --seed 42
 ```
 
 ### Use trained models for inference

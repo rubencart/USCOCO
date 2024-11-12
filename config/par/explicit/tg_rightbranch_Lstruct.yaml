@@ -37,6 +37,8 @@ text_encoder:
  tg_checkpoint: './models/pretrained_text_encoders/rightBranch_tg_37927.params'
  architecture: 'gpt2'
  tg_right_branching: True
+ download_from_hub: True
+ hub_path: "rubencart/TG_RB_sm_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: False

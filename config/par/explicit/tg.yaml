@@ -35,6 +35,8 @@ text_encoder:
  txt_enc_pretrained: True
  text_encoder: 'tg'
  tg_checkpoint: "./models/pretrained_text_encoders/tg_37927.params"
+ download_from_hub: True
+ hub_path: "rubencart/TG_sm_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: False

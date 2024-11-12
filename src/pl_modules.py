@@ -56,6 +56,7 @@ class GenerationModule(pl.LightningModule, ABC):
     ):
         super().__init__()
         if not isinstance(cfg.text_encoder, TextEncoderConfig):
+            print(type(cfg.text_encoder))
             print(cfg.text_encoder)
             cfg.process_args(process=False)
             # cfg.process_args()

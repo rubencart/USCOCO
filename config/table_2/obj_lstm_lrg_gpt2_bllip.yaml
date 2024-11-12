@@ -32,11 +32,8 @@ text_encoder:
  text_encoder: gpt2_bllip
  hf_model_name_or_path: 'gpt2'
  hf_tokenizer_model_name_or_path: 'gpt2'
- attn_gan_text_encoder_path: ''
- attn_gan_text_encoder_input_dim: 1560
- attn_gan_text_encoder_hidden_dim: 1560
- attn_gan_text_encoder_nlayers: 2
- attn_gan_text_encoder_bidirectional: True
+ download_from_hub: True
+ hub_path: "rubencart/GPT-2_Bllip_sm_text_encoder"
 model:
  autoregressive: True
  obj_gan: True

@@ -2,12 +2,13 @@ import logging
 from abc import ABC
 
 from config import TextEncoderConfig
+from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
 
 logger = logging.getLogger("pytorch_lightning")
 
 
-class PretrainedTextEncoder(nn.Module, ABC):
+class PretrainedTextEncoder(nn.Module, ABC, PyTorchModelHubMixin):
     hidden_size: int
 
     def __init__(self, cfg: TextEncoderConfig):
@@ -30,49 +31,3 @@ class PretrainedTextEncoder(nn.Module, ABC):
 
     def get_text_enc_hidden_dim(self):
         return self.hidden_size
-
-    @classmethod
-    def build_text_encoder(cls, cfg, tokenizer):
-        if cfg.use_tg:
-            logger.info("Initializing TG Syntax text encoder")
-            from model.text_encoders.text_encoders import TGEncoder
-
-            text_encoder = TGEncoder(cfg.text_encoder, tokenizer)
-        elif cfg.use_plm:
-            logger.info("Initializing PLM Syntax text encoder")
-            from model.text_encoders.text_encoders import PLMEncoder
-
-            text_encoder = PLMEncoder(cfg.text_encoder, tokenizer)
-        else:
-            if cfg.text_encoder.text_encoder in ("huggingface", "visualbert", "vokenization"):
-                logger.info("Initializing Huggingface text encoder")
-                from model.text_encoders.huggingface import (
-                    HuggingFaceTextEncoder,
-                )
-
-                text_encoder = HuggingFaceTextEncoder(cfg.text_encoder, tokenizer)
-            elif cfg.text_encoder.text_encoder == "gpt2_bllip":
-                logger.info("Initializing Qian baseline LM text encoder")
-                from model.text_encoders.text_encoders import LMEncoder
-
-                text_encoder = LMEncoder(cfg.text_encoder)
-            elif cfg.text_encoder.text_encoder == "sent_clip":
-                logger.info("Initializing CLIP text encoder")
-                from model.text_encoders.text_encoders import (
-                    SentenceCLIPTextEncoder,
-                )
-
-                text_encoder = SentenceCLIPTextEncoder(cfg.text_encoder, tokenizer)
-            elif cfg.text_encoder.text_encoder in ("attn_gan", "rp_transformer", "rp_huggingface"):
-                logger.info("Initializing AttnGAN text encoder")
-                from model.text_encoders.text_encoders import (
-                    AttnGANTextEncoder,
-                )
-
-                text_encoder = AttnGANTextEncoder(cfg.text_encoder, tokenizer)
-            else:
-                raise NotImplementedError
-            from model.text_encoders.text_encoders import SequenceEncoder
-
-            text_encoder = SequenceEncoder(cfg, text_encoder)
-        return text_encoder

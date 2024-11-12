@@ -33,6 +33,8 @@ text_encoder:
  hf_tokenizer_model_name_or_path: 'gpt2-large'
  lm_checkpoint: './models/pretrained_text_encoders/lm_gpt2-large.params'
  architecture: 'gpt2-large'
+ download_from_hub: True
+ hub_path: "rubencart/GPT-2_Bllip_lg_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: False

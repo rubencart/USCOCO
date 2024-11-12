@@ -34,6 +34,8 @@ text_encoder:
  text_encoder: plm
  plm_add_structured_mask: False
  plm_checkpoint: "./models/pretrained_text_encoders/xplm_bllip-lg_rand-init_1101_5.params"
+ download_from_hub: True
+ hub_path: "rubencart/PLM_sm_text_encoder"
 model:
  predict_num_queries: True
  autoregressive: False
