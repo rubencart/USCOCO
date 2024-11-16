@@ -27,7 +27,7 @@ conda create -n uscocoenv python=3.8 h5py -c conda-forge
 conda activate uscocoenv
 conda install pytorch=1.12 torchvision torchaudio cudatoolkit=11.3 -c pytorch
 # conda install h5py
-pip install pytorch-lightning==1.9 wandb transformers typed-argument-parser seaborn iglovikov_helper_functions pycocotools albumentations nltk pyyaml
+pip install pytorch-lightning==1.9 wandb transformers==4.28 typed-argument-parser seaborn iglovikov_helper_functions pycocotools albumentations nltk pyyaml
 pip install git+https://github.com/openai/CLIP.git
 ```
 

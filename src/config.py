@@ -258,7 +258,7 @@ class TextEncoderConfig(Tap):
 
 class TrainConfig(Tap):
     accelerator: str = "gpu"
-    max_epochs: int = 2
+    max_epochs: int = 200
     min_epochs: int = 0
     max_steps: int = -1
     precision: int = 32
