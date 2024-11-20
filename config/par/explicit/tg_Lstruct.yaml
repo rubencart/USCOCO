@@ -71,3 +71,4 @@ detr:
  struct_loss_input: 'tree_pos_embs'  # encoder_out
  condition_bbox_prediction_on_label: null  # probs , embed , logits , null , softmax_embed
  softmax_embed_training_argmax_inference: True
+ switch_attngan_terms: True

@@ -59,8 +59,9 @@ def build_text_encoder(cfg: Config, tokenizer):
             cache_dir=cfg.text_encoder.cache_dir,
         )
     else:
+        logger.info("Initializing text encoder with random weights")
         text_encoder = text_encoder_class(cfg.text_encoder, tokenizer)
 
-    if not cfg.use_plm or cfg.use_tg:
+    if not cfg.use_plm and not cfg.use_tg:
         text_encoder = SequenceEncoder(cfg, text_encoder)
     return text_encoder
