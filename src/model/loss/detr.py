@@ -566,10 +566,6 @@ class Txt2ImgSetCriterion(SetCriterion):
             # always predict one box that is the entire image
             #  so its representation can be matched
             #   against the sentence embedding?
-            # we switch img and text because AttnGAN wants similarity between
-            # 1) text-weighted visual embs and
-            #   2) text embs, and we want similarity between 1) visual obj embs and
-            #   2) vis-obj weighted struct embs
             txt_embs, txt_lens = outputs["text_embed"], outputs["text_lens"]
             if self.cfg.detr.struct_loss_input == "tree_pos_embs":
                 txt_embs, txt_lens = outputs["span_tree_embed"], outputs["span_tree_embed_mask"]

@@ -100,21 +100,19 @@ class MultiObjectContrastiveAttnLoss(torch.nn.Module):
             opt.struct_loss_normalize_sim_scores_across_spans,
         )
         self.sent_loss = DAMSMSentLoss(opt.struct_loss_margin, opt.struct_loss_gamma3)
+        self.switch = opt.switch_attngan_terms
 
-    def forward(
-        self, img_embs, txt_embs, img_lens, txt_lens
-    ):  # , span_mask, span_margs, word_mask):
+    def forward(self, img_embs, txt_embs, img_lens, txt_lens):
         if img_embs.shape[-1] != txt_embs.shape[-1]:
             raise ValueError
 
-        # switch
-        img_embs, txt_embs, img_lens, txt_lens = txt_embs, img_embs, txt_lens, img_lens
-        word_loss, alphas2 = self.word_loss(
-            txt_embs,
-            img_embs,
-            txt_lens,
-            img_lens,  # span_margs, span_mask, word_mask
-        )
+        if self.switch:
+            # we switch img and text because AttnGAN wants similarity between
+            # 1) text-weighted visual embs and
+            #   2) text embs, and we want similarity between 1) visual obj embs and
+            #   2) vis-obj weighted struct embs
+            img_embs, txt_embs, img_lens, txt_lens = txt_embs, img_embs, txt_lens, img_lens
+        word_loss, alphas2 = self.word_loss(txt_embs, img_embs, txt_lens, img_lens)
         return word_loss.mean(), alphas2
 
 
@@ -132,8 +130,8 @@ class DAMSMSentLoss(torch.nn.Module):
         :param args:
         :return: single elem tensor
         """
-        normalized_txt = torch.nn.functional.normalize(txt, dim=-1)
-        normalized_img = torch.nn.functional.normalize(img, dim=-1)
+        normalized_txt = torch.nn.functional.normalize(txt, dim=-1, eps=self.min_val)
+        normalized_img = torch.nn.functional.normalize(img, dim=-1, eps=self.min_val)
         scores = torch.mm(normalized_img, normalized_txt.T)  # b x b, rows: imgs, cols: txt
 
         scores = scores.mul(self.gamma_3).exp()
@@ -171,7 +169,7 @@ class DAMSMWordLoss(torch.nn.Module):
         # self.span_wt = span_wt
         self.normalize_sim_scores_across_spans = normalize_sim_scores_across_spans
 
-    def forward(self, txt, img, txt_len, img_len):  # , span_margs, span_mask, word_mask):
+    def forward(self, txt, img, txt_len, img_len):
         """
         :param txt: shape BS x Lsp x emb_dim
         :param img: shape BS x L x emb_dim
@@ -186,22 +184,20 @@ class DAMSMWordLoss(torch.nn.Module):
         bs, tl, emb_dim = txt.shape
         _, il, _ = img.shape
 
-        normalized_txt = torch.nn.functional.normalize(txt, dim=-1)
-        normalized_img = torch.nn.functional.normalize(img, dim=-1)
+        normalized_txt = torch.nn.functional.normalize(txt, dim=-1, eps=self.min_val)
+        normalized_img = torch.nn.functional.normalize(img, dim=-1, eps=self.min_val)
 
-        txt_mask = torch.arange(tl).repeat((bs, 1)).type_as(txt_len) >= txt_len.unsqueeze(
-            -1
-        )  # b x tl
-        img_mask = torch.arange(il).repeat((bs, 1)).type_as(txt_len) >= img_len.unsqueeze(
-            -1
-        )  # b x il
+        # b x tl
+        txt_mask = torch.arange(tl).repeat((bs, 1)).type_as(txt_len) >= txt_len.unsqueeze(-1)
+        # b x il
+        img_mask = torch.arange(il).repeat((bs, 1)).type_as(txt_len) >= img_len.unsqueeze(-1)
         img_mask2 = (
             img_mask.unsqueeze(-2).repeat((1, tl, 1)).unsqueeze(0).repeat((bs, 1, 1, 1)).bool()
         )
         txt_mask2 = (
             txt_mask.unsqueeze(-1)
             .repeat((1, 1, il))
-            .repeat_interleave(bs, 0)
+            .repeat_interleave(bs, dim=0)
             .view(bs, bs, tl, il)
             .bool()
         )
@@ -209,9 +205,8 @@ class DAMSMWordLoss(torch.nn.Module):
         img2 = normalized_img.reshape(-1, emb_dim)
         txt2 = normalized_txt.reshape(-1, emb_dim)
         sim_scores2 = torch.matmul(txt2, img2.transpose(-1, -2))
-        sim_scores2 = sim_scores2.view(bs, tl, bs, il).permute(
-            0, 2, 1, 3
-        )  # b,b,tl,il: (i,j) = sent i, img j
+        # b,b,tl,il: (i,j) = sent i, img j
+        sim_scores2 = sim_scores2.view(bs, tl, bs, il).permute(0, 2, 1, 3)
         sim_scores2.masked_fill_(txt_mask2 | img_mask2, -float("inf"))
 
         if self.normalize_sim_scores_across_spans:
@@ -224,12 +219,13 @@ class DAMSMWordLoss(torch.nn.Module):
             sim_scores2.masked_fill_(txt_mask2 | img_mask2, -float("inf")).mul(self.gamma_1).exp()
         )
         alphas2 = alphas2 / (alphas2.sum(-1).unsqueeze(-1) + self.min_val)
-        max_obj_scores, max_obj_idcs = alphas2.max(dim=-1)
-        max_obj_idcs = max_obj_idcs.diagonal(dim1=0, dim2=1).T
-        contexts2 = alphas2.matmul(normalized_img)  # b,b,tl,emb: (i,j,k) = sent i, img j, word k
+        # max_obj_scores, max_obj_idcs = alphas2.max(dim=-1)
+        # max_obj_idcs = max_obj_idcs.diagonal(dim1=0, dim2=1).T
+        # b,b,tl,emb: (i,j,k) = sent i, img j, word k
+        contexts2 = alphas2.matmul(normalized_img)
 
         normalized_txt2 = normalized_txt.repeat_interleave(bs, dim=0).view(bs, bs, tl, -1)
-        normalized_contexts2 = torch.nn.functional.normalize(contexts2, dim=-1)
+        normalized_contexts2 = torch.nn.functional.normalize(contexts2, dim=-1, eps=self.min_val)
         # eq. (11): we assume that when computing R(Q_i, D_j),
         # with i =/= j, so c_i en e_j come from a different
         # image/sentence pair, that c_i is computed with the
@@ -242,29 +238,21 @@ class DAMSMWordLoss(torch.nn.Module):
         single_rs2 = torch.matmul(normalized_txt2, normalized_contexts2.transpose(-1, -2))
 
         rs_txt_mask = (
-            txt_mask.unsqueeze(-1).repeat((1, 1, tl)).repeat_interleave(bs, 0).view(bs, bs, tl, tl)
+            txt_mask.unsqueeze(-1)
+            .repeat((1, 1, tl))
+            .repeat_interleave(bs, dim=0)
+            .view(bs, bs, tl, tl)
         )
         rs_context_mask = (
-            txt_mask.unsqueeze(-1).repeat((1, tl, 1)).repeat_interleave(bs, 0).view(bs, bs, tl, tl)
+            txt_mask.unsqueeze(-1)
+            .repeat((1, tl, 1))
+            .repeat_interleave(bs, dim=0)
+            .view(bs, bs, tl, tl)
         )
         single_rs2.masked_fill_(rs_txt_mask | rs_context_mask, -float("inf"))
 
         single_rs2 = single_rs2.diagonal(dim1=-1, dim2=-2)  # b,b,tl
         single_rs2 = single_rs2.mul(self.gamma_2).exp()  # eq. (10) | b,b,tl
-
-        # weigh spans with their marginal, like eq. (6) in Titov
-        # repeat_interleave because first dimension corresponds to sent i, second to img j
-        # span_mask_rep = span_mask.repeat_interleave(bs, dim=0).view(bs, bs, -1)
-        # span_margs_rep = span_margs.repeat_interleave(bs, dim=0).view(bs, bs, -1)
-        # span_margs_mask = torch.arange(span_margs.shape[1]).repeat((bs, 1)).type_as(txt_len)
-        #   < span_mask.sum(-1).unsqueeze(1)
-        # span_margs_mask = span_margs_mask.repeat_interleave(bs, dim=0).view(bs, bs, -1)
-        # wt_single_rs2 = single_rs2.clone()
-        # wt_single_rs2[span_mask_rep] = wt_single_rs2[span_mask_rep]
-        #   * span_margs_rep[span_margs_mask].view(-1)
-        # wt_single_rs2[span_mask_rep] = wt_single_rs2[span_mask_rep] * self.span_wt
-        # word_mask_rep = word_mask.repeat_interleave(bs, dim=0).view(bs, bs, -1)
-        # wt_single_rs2[word_mask_rep] = wt_single_rs2[word_mask_rep] * self.word_wt
 
         sample_rs2 = single_rs2.sum(dim=-1).pow(1 / self.gamma_2).log()  # b,b
         prob_num = sample_rs2.mul(self.gamma_3).exp()  # eq. (11)
@@ -272,4 +260,9 @@ class DAMSMWordLoss(torch.nn.Module):
         loss_img = prob_num / (prob_num.sum(-1).unsqueeze(-1) + self.min_val)
         loss_txt = -loss_txt.log().diagonal()  # .mean()
         loss_img = -loss_img.log().diagonal()  # .mean()
-        return loss_txt + loss_img, alphas2.diagonal(dim1=0, dim2=1).T
+        result = loss_txt + loss_img
+        return (
+            result
+            if torch.isfinite(result).logical_not().sum() < 1
+            else torch.zeros(bs, device=txt.device)
+        ), alphas2.diagonal(dim1=0, dim2=1).T

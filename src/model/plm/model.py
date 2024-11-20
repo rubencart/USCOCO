@@ -31,7 +31,6 @@ class PLM(nn.Module):
         self.REDUCE = tokenizer.REDUCE[0]
 
         if is_random_init:
-            logger.info("Initialize with random weights")
             self.config = GPT2Config(len(self.tokenizer))
             self.model = GPT2PatchedLMHeadModel(self.config)
         else:

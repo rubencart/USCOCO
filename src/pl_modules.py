@@ -187,7 +187,7 @@ class GenerationModule(pl.LightningModule, ABC):
                 for k, v in loss_output.items()
                 if not any([k.startswith(excl) for excl in excludes])
             },
-            on_step=False,
+            on_step=True,
             on_epoch=True,
             logger=True,
             prog_bar=False,

@@ -112,6 +112,7 @@ class DETRConfig(Tap):
     struct_loss_gamma3: float = 10.0
     struct_loss_normalize_sim_scores_across_spans: bool = True
     struct_loss_separate_sent: bool = False
+    switch_attngan_terms: bool = True
 
     # autoregressive
     label_smoothing: float = 0.05

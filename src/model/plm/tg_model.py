@@ -30,7 +30,6 @@ class TG(nn.Module):
         self.ROOT = "[START]"
 
         if is_random_init:
-            logger.info("Initialize with random weights")
             # self.config = GPT2Config(len(self.tokenizer))
             self.config = GPT2Config.from_pretrained(model_name, vocab_size=len(self.tokenizer))
             self.model = GPT2PatchedLMHeadModel(self.config)

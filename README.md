@@ -21,6 +21,7 @@ Dependencies:
 - clip
 - nltk
 - pyyaml
+- huggingface_hub
 
 ```
 conda create -n uscocoenv python=3.8 h5py -c conda-forge

@@ -21,7 +21,6 @@ class LM(nn.Module):
     ):
         super().__init__()
 
-        logger.info("Initialize with random weights")
         self.config = GPT2Config.from_pretrained(
             model_name,
             cache_dir="cache",
