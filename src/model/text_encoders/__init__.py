@@ -48,6 +48,7 @@ def build_text_encoder(cfg: Config, tokenizer):
         cfg.text_encoder.text_encoder
         not in ("huggingface", "visualbert", "vokenization", "sent_clip")
         and cfg.text_encoder.download_from_hub
+        and not cfg.model.download_from_hub
     ):
         logger.info(
             "Loading pretrained text encoder from huggingface hub: %s" % cfg.text_encoder.hub_path

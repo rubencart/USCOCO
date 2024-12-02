@@ -253,7 +253,16 @@ def make_model(
                 tokenizer=tokenizer,
                 strict=False,
             )
-
+    elif cfg.model.download_from_hub:
+        logger.info("loading from Huggingface hub: %s" % cfg.model.hub_path)
+        model = module_class.from_pretrained(
+            cfg.model.hub_path,
+            cfg=cfg,
+            category_dict=dm.category_dict,
+            pos_dict=dm.pos_dict,
+            tokenizer=tokenizer,
+            cache_dir=cfg.text_encoder.cache_dir,
+        )
     else:
         logger.info("starting new model")
         model = module_class(

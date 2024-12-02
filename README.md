@@ -2,7 +2,8 @@
 
 Code, data and checkpoints for our [paper](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00643/120575) 
 published in TACL.
-Version on arXiv contains minor corrections (typo's etc): [link](https://arxiv.org/abs/2401.14212).
+Version on arXiv contains minor corrections (typo's etc), as well as a more complete description of
+the structural loss and the USCOCO collection process: [link](https://arxiv.org/abs/2401.14212).
 
 ## Install
 
@@ -62,7 +63,79 @@ text_encoder:
 
 ### Use trained models for inference
 
-Coming soon...
+Checkpoints of full pretrained models (i.e., text encoder plus layout predictor) can also be downloaded from the Huggingface hub
+([link](https://huggingface.co/rubencart)). 
+
+Set the `hub_path` in a config file (with the text encoder and layout predictor set to the right type).
+```
+use_plm: False
+use_tg: True
+text_encoder:
+ txt_enc_finetune: False
+ txt_enc_pretrained: True
+ text_encoder: 'tg'
+model:
+ predict_num_queries: True
+ autoregressive: False
+ download_from_hub: True
+ hub_path: "rubencart/TG_sm_PAR_struct025_s41_layout_predictor"
+```
+
+Load the model from the hub with `module_class.from_pretrained`, and make predictions.
+```python
+from collections import OrderedDict
+
+import yaml
+from config import Config, ConfigNs
+from data.data_module import COCODataModule
+from data.tokenization import Tokenizer, Vocabulary
+from pl_modules import (
+    AutoregressiveGenerationModule,
+    DETRGenerationModule,
+    ObjGANGenerationModule,
+)
+
+# Set up
+cfg_file = "./config/predict/tg.yaml"
+with open(cfg_file, "r") as f:
+    dict_cfg = yaml.load(f, Loader=yaml.FullLoader)
+cfg = Config()
+cfg.from_dict(dict_cfg)
+cfg.process_args()
+train_ns_cfg = ConfigNs(cfg.train.as_dict())
+text_tokenizer = Tokenizer.build_tokenizer(cfg.text_encoder)
+data_module = COCODataModule(cfg, text_tokenizer)
+data_module.prepare_data()  # doesn't do anything for now
+data_module.setup("test" if cfg.do_test else "fit")
+
+if cfg.model.obj_gan:
+    module_class = ObjGANGenerationModule
+elif cfg.model.autoregressive:
+    module_class = AutoregressiveGenerationModule
+else:
+    module_class = DETRGenerationModule
+
+# Load pretrained model from Huggingface hub
+model = module_class.from_pretrained(
+    cfg.model.hub_path,
+    cfg=cfg,
+    category_dict=data_module.category_dict,
+    pos_dict=data_module.pos_dict,
+    tokenizer=text_tokenizer,
+    cache_dir=cfg.text_encoder.cache_dir,
+)
+
+unexpected_dl = data_module.test_dataloader()[0]
+batch = next(iter(unexpected_dl))
+
+# Predict and post-process
+output = model.predict_step(batch, batch_idx=0)
+processed_output = model.post_process(output, batch)
+
+indexed_by_img_id = OrderedDict([
+    (img_id, output) for img_id, output in zip(batch["img_ids"], processed_output)
+])
+```
 
 ## Replicate experiments
 
@@ -161,6 +234,8 @@ CUDA_VISIBLE_DEVICES=0 python src/main.py --cfg config/par/explicit/tg_lrg_Lstru
 
 ### Probe
 
+Coming soon...
+
 Run first with (in `.yaml`):
 ```
 save_probe_embeddings: True
@@ -192,7 +267,8 @@ are included in COCO captions/detection format, in files
 
 ## Checkpoints
 
-Coming soon...
+Text encoder checkpoints, as well as full model (text encoder and layout predictor) checkpoints are available
+via https://huggingface.co/rubencart.
 
 ## Citation
 

@@ -10,6 +10,11 @@ logger = logging.getLogger("pytorch_lightning")
 
 
 class ModelConfig(Tap):
+    # this downloads the entire model, incl layout predictor and text encoder,
+    #  from the Huggingface hub
+    download_from_hub: bool = False
+    hub_path: str = ""
+
     length_dropout: float = 0.0
 
     length_loss_coef: float = 0.1
@@ -175,6 +180,7 @@ class TextEncoderConfig(Tap):
         "gpt2_bllip",
         "tg",
     ] = "huggingface"
+    # Enable this to download (only) the pretrained text encoder
     txt_enc_pretrained: bool = True
     download_from_hub: bool = False
     hub_path: str = ""
