@@ -180,8 +180,8 @@ class TextEncoderConfig(Tap):
         "gpt2_bllip",
         "tg",
     ] = "huggingface"
-    # Enable this to download (only) the pretrained text encoder
     txt_enc_pretrained: bool = True
+    # Enable this to download (only) the pretrained text encoder
     download_from_hub: bool = False
     hub_path: str = ""
     txt_enc_finetune: bool = False
