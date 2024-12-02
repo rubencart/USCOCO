@@ -12,6 +12,7 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.distributed
+from huggingface_hub import PyTorchModelHubMixin
 from torch import Tensor, optim
 from torch.optim.lr_scheduler import LinearLR, SequentialLR
 
@@ -45,7 +46,7 @@ def unpack_tensor(inp):
         return inp
 
 
-class GenerationModule(pl.LightningModule, ABC):
+class GenerationModule(pl.LightningModule, ABC, PyTorchModelHubMixin):
     def __init__(
         self,
         cfg: Config,
